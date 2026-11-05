@@ -19,6 +19,20 @@ RowLayout {
         searchInput.forceActiveFocus();
     }
 
+    function flushSearch() {
+        searchUpdateTimer.stop();
+        if (LauncherSearch.query !== searchInput.text)
+            LauncherSearch.query = searchInput.text;
+    }
+
+    // Finish handling the key release before doing potentially expensive search
+    // work. The timer also covers paste and input methods without a key release.
+    Timer {
+        id: searchUpdateTimer
+        interval: 200
+        onTriggered: root.flushSearch()
+    }
+
     enum SearchPrefixType { Action, App, Clipboard, Emojis, Symbols, Math, ShellCommand, WebSearch, Keybinds, SpotifyPlay, SpotifyQueue, AskAI, DefaultSearch }
 
     property var searchPrefixType: {
@@ -93,9 +107,15 @@ RowLayout {
             }
         }
 
-        onTextChanged: LauncherSearch.query = text
+        onTextChanged: {
+            if (text === "")
+                root.flushSearch();
+            else
+                searchUpdateTimer.restart();
+        }
 
         onAccepted: {
+            root.flushSearch();
             if (appResults.count > 0) {
                 // Get the first visible delegate and trigger its click
                 let firstItem = appResults.itemAtIndex(0);
@@ -107,12 +127,17 @@ RowLayout {
 
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Tab) {
+                root.flushSearch();
                 if (LauncherSearch.results.length === 0) return;
                 const tabbedText = LauncherSearch.results[0].name;
                 LauncherSearch.query = tabbedText;
                 searchInput.text = tabbedText;
                 event.accepted = true;
             }
+        }
+
+        Keys.onReleased: event => {
+            root.flushSearch();
         }
     }
 
