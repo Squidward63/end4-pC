@@ -15,7 +15,7 @@ import Quickshell.Services.Mpris
 
 Item {
     id: root
-    property var player: Mpris.players.values[root.currentPlayerIndex] ?? Mpris.players.values[0]
+    readonly property var player: MprisController.activePlayer
     property var artUrl: player?.trackArtUrl ?? ""
     property string artDownloadLocation: Directories.coverArt
     property bool showLyrics: Config.options.sidebar.media.showLyrics ?? true
@@ -33,7 +33,6 @@ Item {
     property real maxVisualizerValue: 1000
     property int visualizerSmoothing: 2
     property real radius
-    property int currentPlayerIndex: 0
     property bool blurredBackground: Config.options.sidebar.media.blurredBackground ?? false
     property bool shapeArt: Config.options.sidebar.media.shapeArt ?? false
     readonly property var artShapeOptions: ["Circle", "Square", "Pill", "Bun", "Cookie12Sided", "Clover4Leaf", "Heart", "Slanted", "Arch", "Arrow", "SemiCircle", "Oval", "Triangle", "Diamond", "ClamShell", "Pentagon", "Gem", "Sunny", "VerySunny", "Cookie4Sided", "Cookie6Sided", "Cookie7Sided", "Cookie9Sided", "Ghostish", "Clover8Leaf", "Burst", "SoftBurst", "Boom", "SoftBoom", "Flower", "Puffy", "PuffyDiamond"]
@@ -672,11 +671,22 @@ Item {
             // ── Player selector ──
             StyledComboBox {
                 id: playerSelector
-                visible: Mpris.players.values.length > 1
+                readonly property var players: Array.from(MprisController.players)
+                readonly property int activeIndex: players.findIndex(p => p === MprisController.activePlayer)
+
+                visible: players.length > 1
                 Layout.fillWidth: true
                 Layout.topMargin: 12
-                model: Mpris.players.values.map(p => p.identity ?? p.desktopEntry ?? "Unknown")
-                currentIndex: 0
+                model: players.map(p => p.identity ?? p.desktopEntry ?? Translation.tr("Unknown"))
+                onActivated: index => MprisController.manualPlayer = players[index]
+
+                function syncIndex() {
+                    playerSelector.currentIndex = playerSelector.activeIndex;
+                }
+                onActiveIndexChanged: Qt.callLater(syncIndex)
+                onModelChanged: Qt.callLater(syncIndex)
+                onCountChanged: Qt.callLater(syncIndex)
+                Component.onCompleted: syncIndex()
             }
         }
     }
