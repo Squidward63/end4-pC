@@ -16,6 +16,10 @@ import Quickshell.Services.Mpris
 Item {
     id: root
     readonly property var player: MprisController.activePlayer
+    readonly property bool hasDuration: (root.player?.lengthSupported ?? false)
+        && Number.isFinite(root.player.length) && root.player.length > 0
+    readonly property real playbackProgress: root.hasDuration
+        ? Math.max(0, Math.min(1, (root.player?.position ?? 0) / root.player.length)) : 0
     property var artUrl: player?.trackArtUrl ?? ""
     property string artDownloadLocation: Directories.coverArt
     property bool showLyrics: Config.options.sidebar.media.showLyrics ?? true
@@ -409,13 +413,13 @@ Item {
                                 id: sliderLoader
                                 property var player: root.player
                                 anchors.fill: parent
-                                active: sliderLoader.player?.canSeek ?? false
+                                active: root.hasDuration && (sliderLoader.player?.canSeek ?? false)
                                 sourceComponent: StyledSlider {
                                     configuration: StyledSlider.Configuration.Wavy
                                     highlightColor: blendedColors.colPrimary
                                     trackColor: blendedColors.colSecondaryContainer
                                     handleColor: blendedColors.colPrimary
-                                    value: (sliderLoader.player?.position ?? 0) / (sliderLoader.player?.length ?? 1)
+                                    value: root.playbackProgress
                                     onMoved: {
                                         sliderLoader.player.position = value * sliderLoader.player.length
                                         lyricsComp.restartLyrics()
@@ -431,12 +435,12 @@ Item {
                                     left: parent.left
                                     right: parent.right
                                 }
-                                active: !(progressBarLoader.player?.canSeek ?? false)
+                                active: !root.hasDuration || !(progressBarLoader.player?.canSeek ?? false)
                                 sourceComponent: StyledProgressBar {
-                                    wavy: progressBarLoader.player?.isPlaying ?? false
+                                    wavy: root.hasDuration && (progressBarLoader.player?.isPlaying ?? false)
                                     highlightColor: blendedColors.colPrimary
                                     trackColor: blendedColors.colSecondaryContainer
-                                    value: (progressBarLoader.player?.position ?? 0) / (progressBarLoader.player?.length ?? 1)
+                                    value: root.playbackProgress
                                 }
                             }
                         }
@@ -459,7 +463,7 @@ Item {
                                 color: blendedColors.colSubtext
                                 font.letterSpacing: -0.4
                                 font.features: { "tnum": 1 }
-                                text: StringUtils.friendlyTimeForSeconds(root.player?.length ?? 0)
+                                text: root.hasDuration ? StringUtils.friendlyTimeForSeconds(root.player.length) : "--:--"
                             }
                         }
                     }
