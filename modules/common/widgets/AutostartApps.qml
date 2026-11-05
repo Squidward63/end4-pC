@@ -22,13 +22,13 @@ ColumnLayout {
         const list = []
         for (let i = 0; i < entries.count; i++) {
             const entry = entries.get(i)
-            list.push({ cmd: entry.cmd, workspace: entry.workspace, delay: entry.delay })
+            list.push({ cmd: entry.cmd, workspace: entry.workspace, specialWorkspace: entry.specialWorkspace, delay: entry.delay })
         }
         return list
     }
 
     function configSnapshot() {
-        return (root.autostart.apps ?? []).map(app => ({ cmd: app.cmd ?? "", workspace: app.workspace ?? 1, delay: app.delay ?? 0 }))
+        return (root.autostart.apps ?? []).map(app => ({ cmd: app.cmd ?? "", workspace: app.workspace ?? 1, specialWorkspace: app.specialWorkspace ?? false, delay: app.delay ?? 0 }))
     }
 
     function loadFromConfig() {
@@ -49,7 +49,7 @@ ColumnLayout {
     }
 
     function addEntry() {
-        entries.append({ cmd: "", workspace: 1, delay: 0 })
+        entries.append({ cmd: "", workspace: 1, specialWorkspace: false, delay: 0 })
         root.commit()
     }
 
@@ -163,6 +163,7 @@ ColumnLayout {
 
             GroupedList {
                 Layout.fillWidth: true
+                itemVisibility: [true, true, !model.specialWorkspace, true]
 
                 ConfigTextArea {
                     id: commandField
@@ -193,6 +194,16 @@ ColumnLayout {
                         interval: 600
                         onTriggered: root.setField(index, "cmd", commandField.value)
                     }
+                }
+
+                ConfigSwitch {
+                    buttonIcon: "shelves"
+                    text: Translation.tr("Open in Special workspace")
+                    checked: model.specialWorkspace
+
+                    property bool ready: false
+                    Component.onCompleted: ready = true
+                    onCheckedChanged: if (ready) root.setField(index, "specialWorkspace", checked)
                 }
 
                 ConfigSpinBox {

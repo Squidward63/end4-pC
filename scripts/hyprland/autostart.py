@@ -47,8 +47,12 @@ for app in autostart.get("apps", []):
     if not command:
         continue
 
-    dispatch(f"hl.dsp.focus({{workspace = {workspace}}})")
-    dispatch(f"hl.dsp.exec_cmd({lua_string(os.path.expanduser(command))})")
+    if app.get("specialWorkspace", False):
+        dispatch(f'hl.dsp.exec_cmd({lua_string(os.path.expanduser(command))}, '
+                 '{workspace = "special:special silent"})')
+    else:
+        dispatch(f"hl.dsp.focus({{workspace = {workspace}}})")
+        dispatch(f"hl.dsp.exec_cmd({lua_string(os.path.expanduser(command))})")
     time.sleep(max(delay, 0.4))
 
 if original is not None:

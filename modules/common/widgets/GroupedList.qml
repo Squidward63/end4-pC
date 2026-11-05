@@ -5,6 +5,9 @@ import QtQuick.Layouts
 Item {
     id: root
     default property list<Item> items
+    property list<bool> itemVisibility: []
+    readonly property var visibleIndices: Array.from({ length: items.length }, (_, index) => index)
+        .filter(index => root.itemVisibility[index] ?? true)
     property real bigRadius: Appearance.rounding.normal
     property real smallRadius: Appearance.rounding.unsharpenmore
     property color bgcolor: Appearance.colors.colLayer1
@@ -22,8 +25,9 @@ Item {
             model: root.items.length
             delegate: Rectangle {
                 required property int index
-                readonly property bool isFirst: index === 0
-                readonly property bool isLast: index === root.items.length - 1
+                readonly property bool isFirst: index === root.visibleIndices[0]
+                readonly property bool isLast: index === root.visibleIndices[root.visibleIndices.length - 1]
+                visible: root.itemVisibility[index] ?? true
                 Layout.fillWidth: true
                 implicitHeight: (root.items[index]?.implicitHeight ?? 0) + root.itemVerticalPadding
                 color: root.bgcolor
