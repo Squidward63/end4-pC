@@ -2,6 +2,7 @@ pragma Singleton
 
 import qs.modules.common
 import qs.modules.common.functions
+import QtQuick
 import Quickshell
 
 /**
@@ -40,13 +41,32 @@ Singleton {
         }
     ]
 
-    // Deduped list to fix double icons
-    readonly property list<DesktopEntry> list: Array.from(DesktopEntries.applications.values)
-        .filter((app, index, self) => 
-            index === self.findIndex((t) => (
-                t.id === app.id
-            ))
-    )
+    // A desktop rescan emits valuesChanged for each insertion/removal. Publish
+    // one snapshot after the batch instead of rebuilding search on every signal.
+    readonly property list<DesktopEntry> list: appListCache.entries
+
+    QtObject {
+        id: appListCache
+        property list<DesktopEntry> entries: []
+    }
+
+    function refreshAppList() {
+        const seen = new Set();
+        appListCache.entries = Array.from(DesktopEntries.applications.values).filter(app => {
+            if (seen.has(app.id)) return false;
+            seen.add(app.id);
+            return true;
+        });
+    }
+
+    Component.onCompleted: root.refreshAppList()
+
+    Connections {
+        target: DesktopEntries.applications
+        function onValuesChanged() {
+            Qt.callLater(root.refreshAppList);
+        }
+    }
     
     readonly property var preppedNames: list.map(a => ({
         name: Fuzzy.prepare(`${a.name} `),
