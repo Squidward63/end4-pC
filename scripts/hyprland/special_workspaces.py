@@ -9,12 +9,12 @@ import subprocess
 import sys
 import tempfile
 
-NAME = re.compile(r"[A-Za-z0-9_-]{1,64}")
+NAME = re.compile(r"[\w-]{1,64}")
 MODIFIERS = ("SUPER", "CTRL", "ALT", "SHIFT")
 
 
 def lua_string(value):
-    return json.dumps(value, ensure_ascii=True)
+    return json.dumps(value, ensure_ascii=False)
 
 
 def shortcut(value):
@@ -44,7 +44,7 @@ def render(entries):
             raise ValueError("Invalid workspace entry")
         name = entry.get("name", "")
         if not isinstance(name, str) or not NAME.fullmatch(name):
-            raise ValueError("Workspace names: 1–64 letters, numbers, underscores or hyphens")
+            raise ValueError("Workspace names: 1–64 letters in any language, numbers, underscores or hyphens")
         if name in names:
             raise ValueError(f"Duplicate workspace name: {name}")
         names.add(name)

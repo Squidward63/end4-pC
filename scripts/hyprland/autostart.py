@@ -50,7 +50,7 @@ for app in autostart.get("apps", []):
 
     if app.get("specialWorkspace", False):
         name = app.get("specialWorkspaceName") or "special"
-        if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", name):
+        if not isinstance(name, str) or not re.fullmatch(r"[\w-]{1,64}", name):
             print(f"Skipping app with invalid special workspace: {name!r}", file=sys.stderr)
             continue
         dispatch(f'hl.dsp.exec_cmd({lua_string(os.path.expanduser(command))}, '

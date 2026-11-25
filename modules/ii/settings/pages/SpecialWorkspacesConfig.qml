@@ -79,7 +79,7 @@ ContentPage {
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             color: Appearance.colors.colSubtext
-            text: Translation.tr("Create named workspaces and assign shortcuts. Names use letters, numbers, underscores or hyphens. Assigned shortcuts replace existing bindings. Leave a shortcut empty to disable it.")
+            text: Translation.tr("Create named workspaces and assign shortcuts. Names use letters in any language, numbers, underscores or hyphens. Assigned shortcuts replace existing bindings. Leave a shortcut empty to disable it.")
         }
 
         ColumnLayout {
