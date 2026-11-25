@@ -818,8 +818,11 @@ Singleton {
             }
         }
 
-        //////// Prioritized by prefix /////////
-        let result = [];
+        const startsWithMathPrefix = root.query.startsWith(Config.options.search.prefix.math);
+        const startsWithShellCommandPrefix = root.query.startsWith(Config.options.search.prefix.shellCommand);
+        const startsWithWebSearchPrefix = root.query.startsWith(Config.options.search.prefix.webSearch);
+        const hasActionPrefix = startsWithMathPrefix || startsWithShellCommandPrefix || startsWithWebSearchPrefix;
+        let result = hasActionPrefix ? [] : [...appResultObjects];
         if (domainResultObject)
             result.push(domainResultObject);
 
@@ -900,9 +903,6 @@ Singleton {
             }
         }
         const startsWithNumber = /^\d/.test(root.query);
-        const startsWithMathPrefix = root.query.startsWith(Config.options.search.prefix.math);
-        const startsWithShellCommandPrefix = root.query.startsWith(Config.options.search.prefix.shellCommand);
-        const startsWithWebSearchPrefix = root.query.startsWith(Config.options.search.prefix.webSearch);
         if (startsWithNumber || startsWithMathPrefix) {
             result.push(mathResultObject);
         } else if (startsWithShellCommandPrefix) {
@@ -911,8 +911,8 @@ Singleton {
             result.push(webSearchResultObject);
         }
 
-        //////////////// Apps //////////////////
-        result = result.concat(appResultObjects);
+        if (hasActionPrefix)
+            result = result.concat(appResultObjects);
         ////////////// Settings ////////////////
         result = result.concat(settingsResults);
         ////////// Launcher actions ////////////
