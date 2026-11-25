@@ -44,6 +44,19 @@ class AutostartTests(unittest.TestCase):
             'hl.dsp.focus({workspace = 3})',
         ])
 
+    def test_named_special_workspace_opens_silently(self):
+        commands = self.launch([{"cmd": "spotify", "specialWorkspace": True,
+                                 "specialWorkspaceName": "Media"}])
+        self.assertEqual(commands, [
+            'hl.dsp.exec_cmd("spotify", {workspace = "special:Media silent"})',
+            'hl.dsp.focus({workspace = 3})',
+        ])
+
+    def test_invalid_special_name_does_not_dispatch(self):
+        commands = self.launch([{"cmd": "kitty", "specialWorkspace": True,
+                                 "specialWorkspaceName": 'bad"\nname'}])
+        self.assertEqual(commands, ['hl.dsp.focus({workspace = 3})'])
+
     def test_mixed_entries_keep_their_destinations(self):
         commands = self.launch([
             {"cmd": "kitty", "specialWorkspace": True},

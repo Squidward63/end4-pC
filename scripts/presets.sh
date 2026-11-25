@@ -29,7 +29,7 @@ BLACKLIST_FILTER='del(._presetMeta)
   | del(.bar.weather)
   | del(.appearance.fonts)
   | del(.profile.onlinePresets, .profile.uploadGuideSeen)
-  | del(.hyprland.input, .hyprland.autostartApps, .hyprland.general.layout)
+  | del(.hyprland.input, .hyprland.autostartApps, .hyprland.specialWorkspaces, .hyprland.general.layout)
   | del(.dock.pinnedApps, .launcher.pinnedApps, .tray.pinnedItems)
   | del(.sidebar.booru, .wallpaperSelector.userPath)
   | walk(if type == "object" then with_entries(select(.key | test("^(.*api[-_]?key|secret|password|token|username|e-?mail)$"; "i") | not)) else . end)'

@@ -175,6 +175,10 @@ Singleton {
             }
 
             property JsonObject hyprland: JsonObject {
+                property list<var> specialWorkspaces: [
+                    { name: "special", toggleKeybind: "SUPER + S", moveKeybind: "SUPER + SHIFT + S", toggleAliases: "CTRL + SUPER + S, SUPER + mouse:275" },
+                    { name: "Media", toggleKeybind: "SUPER + M", moveKeybind: "", toggleAliases: "" }
+                ]
                 property JsonObject animations: JsonObject {
                     property string animation: "normal"
                     property bool enable: true

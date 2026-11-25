@@ -22,13 +22,13 @@ ColumnLayout {
         const list = []
         for (let i = 0; i < entries.count; i++) {
             const entry = entries.get(i)
-            list.push({ cmd: entry.cmd, workspace: entry.workspace, specialWorkspace: entry.specialWorkspace, delay: entry.delay })
+            list.push({ cmd: entry.cmd, workspace: entry.workspace, specialWorkspace: entry.specialWorkspace, specialWorkspaceName: entry.specialWorkspaceName, delay: entry.delay })
         }
         return list
     }
 
     function configSnapshot() {
-        return (root.autostart.apps ?? []).map(app => ({ cmd: app.cmd ?? "", workspace: app.workspace ?? 1, specialWorkspace: app.specialWorkspace ?? false, delay: app.delay ?? 0 }))
+        return (root.autostart.apps ?? []).map(app => ({ cmd: app.cmd ?? "", workspace: app.workspace ?? 1, specialWorkspace: app.specialWorkspace ?? false, specialWorkspaceName: app.specialWorkspaceName || "special", delay: app.delay ?? 0 }))
     }
 
     function loadFromConfig() {
@@ -49,7 +49,7 @@ ColumnLayout {
     }
 
     function addEntry() {
-        entries.append({ cmd: "", workspace: 1, specialWorkspace: false, delay: 0 })
+        entries.append({ cmd: "", workspace: 1, specialWorkspace: false, specialWorkspaceName: "special", delay: 0 })
         root.commit()
     }
 
@@ -123,6 +123,7 @@ ColumnLayout {
 
         delegate: ColumnLayout {
             id: entryItem
+            readonly property string savedSpecialName: model.specialWorkspaceName
             Layout.fillWidth: true
             spacing: 4
             visible: root.autostart.enable
@@ -163,7 +164,7 @@ ColumnLayout {
 
             GroupedList {
                 Layout.fillWidth: true
-                itemVisibility: [true, true, !model.specialWorkspace, true]
+                itemVisibility: [true, true, !model.specialWorkspace, model.specialWorkspace, true]
 
                 ConfigTextArea {
                     id: commandField
@@ -216,6 +217,20 @@ ColumnLayout {
                     property bool ready: false
                     Component.onCompleted: ready = true
                     onValueChanged: if (ready) root.setField(index, "workspace", value)
+                }
+
+                ConfigComboBox {
+                    buttonIcon: "shelves"
+                    text: Translation.tr("Special workspace")
+                    currentValue: entryItem.savedSpecialName
+                    model: {
+                        const names = Config.options.hyprland.specialWorkspaces.map(entry => entry.name)
+                        if (!names.includes("special")) names.unshift("special")
+                        const saved = entryItem.savedSpecialName
+                        if (saved && !names.includes(saved)) names.push(saved)
+                        return names.map(name => ({ displayName: name, value: name }))
+                    }
+                    onSelected: newValue => root.setField(index, "specialWorkspaceName", newValue)
                 }
 
                 ConfigSpinBox {
